@@ -1,0 +1,66 @@
+
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoramento
+    environment:
+      - GF_SECURITY_ADMINH_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: unless-stopped
+    volumes:
+     - grafana_data:/var/lib/grafana
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+    networks:
+      - monitoramento
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prom_data:/prometheus
+
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    ports:
+      - "9093:9093"
+    networks:
+      - monitoramento
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+    restart: unless-stopped
+
+  servidor_web_ubuntu:
+    image: ubuntu:latest
+    container_name: servidor_web_ubuntu
+    command: >
+      bash -c "apt-get update && apt-get install -y prometheus-node-exporter && \
+      /usr/bin/prometheus-node-exporter"
+    networks:
+      - monitoramento
+    mem_limit: 1g
+    cpus: 0.5
+    restart: unless-stopped
+
+
+networks:
+  monitoramento:
+    driver: bridge
+
+volumes:
+  grafana_data:
+    driver: local
+  prom_data:
+    driver: local
