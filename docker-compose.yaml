@@ -46,12 +46,20 @@ services:
     image: ubuntu:latest
     container_name: servidor_web_ubuntu
     command: >
-      bash -c "apt-get update && apt-get install -y prometheus-node-exporter && \
-      /usr/bin/prometheus-node-exporter"
+      bash -c "apt-get update && apt-get install -y prometheus-node-exporter nginx && \
+      /usr/bin/prometheus-node-exporter --web.listen-address=:9100 && service nginx start && tail -f /dev/null"
     networks:
       - monitoramento
-    mem_limit: 1g
-    cpus: 0.5
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 1024M
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+    ports:
+      - "8080:80"
     restart: unless-stopped
 
 

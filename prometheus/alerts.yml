@@ -1,0 +1,21 @@
+groups:
+  - name: alertas_servidor
+    interval: 15s
+    rules:
+      - alert: "Alto uso de CPU"
+        expr: 100 * (1 - avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[2m]))) > 80
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Uso alto de CPU no {{ $labels.instance }}"
+          description: "A CPU do servidor {{ $labels.instance }} está acima de 80% por mais de 1 minuto."
+
+      - alert: "Alto uso de Memória"
+        expr: (node_memory_Active_bytes / node_memory_MemTotal_bytes) * 100 > 10
+        for: 10s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Uso alto de Memória no {{ $labels.instance }}"
+          description: "A Memória do servidor {{ $labels.instance }} está acima de 80% por mais de 1 minuto."
